@@ -1,0 +1,19 @@
+Given hostnames like this:
+
+    web1
+    web2
+    web3
+
+or
+
+    web001
+    web002
+    web003
+
+etc
+
+This fact will set a fact called cluster
+with values alpha, beta, charlie etc.
+
+You can configure how mamy clusters you want
+using the 'clusters' variable
