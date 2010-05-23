@@ -1,0 +1,19 @@
+A fact that will find all interfaces in /etc/sysconfig/network-scripts
+and pull out the HWADDR from each.
+
+You'd use this if you have bonded nics and need to know the real 
+MAC addresses, since bonding will change the MAC on the network
+cards at runtime.
+
+    # facter -p|egrep '(hwad|mac)'
+    hwaddr_eth0 => 00:14:5E:33:62:0A
+    hwaddr_eth1 => 00:14:5E:33:62:0B
+    macaddress => 00:14:5E:33:62:0A
+    macaddress_bond0 => 00:14:5E:33:62:0A
+    macaddress_bond0:1 => 00:14:5E:33:62:0A
+    macaddress_eth0 => 00:14:5E:33:62:0A
+    macaddress_eth1 => 00:14:5E:33:62:0A
+
+This example shows that the standard macaddress_* facts do not cope
+well with bonding, but this fact will add new facts that sets the 
+real macs
