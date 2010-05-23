@@ -1,0 +1,6 @@
+Given a file /etc/facts.txt in the following format:
+
+    country=uk
+    customer=acme
+
+This fact will add facts for each pair
