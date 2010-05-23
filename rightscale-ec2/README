@@ -1,0 +1,14 @@
+This fact takes all the EC2 variables provided by 
+the rightscale scripts and add facts for them.
+
+You can also pass userdata in the form:
+
+    foo=bar
+
+and it will add a fact foo => bar.
+
+For this to work you should add run:
+
+   /opt/rightscale/bin/ec2.sh
+
+From your rc.local on the nodes
