@@ -1,0 +1,21 @@
+Adds a few facts about the disk drives in your systems
+currently it supports Xen domU drives, IDE and SCSI/SATA
+disks.
+
+Xen domU:
+
+    diskdrives => xvda
+    diskmodel_xvda => Xen Virtual Disk
+    disksize_xvda => 20971520
+    disktype_xvda => xvd
+
+Physical Server - SATA:
+   
+    diskdrives => sda,sdb
+    diskmodel_sda => SAMSUNG HD403LJ 
+    diskmodel_sdb => SAMSUNG HD403LJ 
+    disksize_sda => 781422768
+    disksize_sdb => 781422768
+    disktype_sda => scsi
+    disktype_sdb => scsi
+
