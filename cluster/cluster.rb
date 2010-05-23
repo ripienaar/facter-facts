@@ -10,9 +10,9 @@ if Facter.hostname =~ /(\d+)$/
                  "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey",
                  "xray", "yankee", "zulu"]
 
-	cluster = NATOALPHA[hostname % clusters]
+    cluster = NATOALPHA[hostname % clusters]
 
-	Facter.add(:cluster) do
-		setcode { cluster }
-	end
+    Facter.add(:cluster) do
+        setcode { cluster }
+    end
 end
