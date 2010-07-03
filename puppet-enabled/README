@@ -1,0 +1,7 @@
+Sets the fact puppet_enabled to 1 if runs are enabled, 0 otherwise.
+
+Needs the correct path to your puppetdlockfile, figure it out using:
+
+   puppetd --genconfig|grep puppetdlockfile
+
+as root
