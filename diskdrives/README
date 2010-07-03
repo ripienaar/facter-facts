@@ -1,6 +1,6 @@
-Adds a few facts about the disk drives in your systems
-currently it supports Xen domU drives, IDE and SCSI/SATA
-disks.
+Adds a few facts about the disk drives in your systems urrently it
+supports Xen domU drives, IDE and SCSI/SATA disks. It also supports
+SMART status.
 
 Xen domU:
 
@@ -18,4 +18,20 @@ Physical Server - SATA:
     disksize_sdb => 781422768
     disktype_sda => scsi
     disktype_sdb => scsi
+    diskdrives_smart => sda,sdb
+    disksmart_hda => no
+    disksmart_sda => yes
+    disksmart_sdb => yes
+    disksmartattr_hda => no
+    disksmartattr_sda => no
+    disksmartattr_sdb => no
 
+
+Changelog:
+2010/01/04 - Intial Release
+2010/03/15 - Fix for Linux-Vserver guests - Micah Anderson <micah@riseup.net>
+2010/05/26 - Fix for kvm guests (requires facter 1.5.8) - Micah Anderson <micah@riseup.net>
+2010/01/08 - compact! arrays so sort won't blow up when there are nil value in them.
+    	     look for smartattr on ide disks and set it to 'no' on virtual disks. - Pietro <pietro@riseup.net>
+2010/01/07 - create diskdriver_smartattr and diskdrives_smart with all disks that supoprt smart -- Pietro <pietro@riseup.net>
+2010/01/06 - setup smartctl to query for disk smart support and output to /dev/null - Pietro <pietro@riseup.net>
