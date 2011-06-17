@@ -30,7 +30,7 @@ module Facter::Util::DiskDrives
                 @drivedata[d][:type] = "ide"
                 @drivedata[d][:model] = get_file_contents("/proc/ide/#{d}/model", "unknown") if File.exists?("/proc/ide")
                 @drivedata[d][:size] = get_file_contents("/sys/block/#{d}/size", 0) if File.exists?("/sys/block")
-                @drivedata[d][:smart] =  system("smartctl -i /dev/#{d} &> /dev/null") ? "yes" : "no"
+                @drivedata[d][:smart] =  system("smartctl -i /dev/#{d} 2>&1 1>/dev/null") ? "yes" : "no"
                 if @drivedata[d][:smart] == "yes"
                     smart_attr = %x{smartctl -A /dev/#{d}}
                 end
@@ -71,7 +71,7 @@ module Facter::Util::DiskDrives
                 @drivedata[d][:type] = "scsi"
                 @drivedata[d][:model] = get_file_contents("/sys/block/#{d}/device/model", "unknown") if File.exists?("/sys/block")
                 @drivedata[d][:size] = get_file_contents("/sys/block/#{d}/size", 0) if File.exists?("/sys/block")
-                @drivedata[d][:smart] =  system("smartctl -i /dev/#{d} &> /dev/null") ? "yes" : "no"
+                @drivedata[d][:smart] =  system("smartctl -i /dev/#{d} 2>&1 1>/dev/null") ? "yes" : "no"
                 if @drivedata[d][:smart] == "yes"
                     smart_attr = %x{smartctl -A /dev/#{d}}
                 end
