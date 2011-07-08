@@ -1,57 +1,179 @@
-begin
-    Dir.entries("/etc/facts.d").sort.each do |fact|
-        begin
-            next if fact =~ /^\./
+# A Facter plugin that loads facts from /etc/facts.d.
+#
+# Facts can be in the form of JSON, YAML or Text files
+# and any executable that returns key=value pairs.
+#
+# In the case of scripts you can also create a file that
+# contains a cache TTL.  For foo.sh store the ttl as just
+# a number in foo.sh.ttl
+#
+# The cache is stored in /tmp/facts_cache.yaml as a mode
+# 600 file and will have the end result of not calling your
+# fact scripts more often than is needed
+class Facter::Util::DotD
+    require 'yaml'
 
-            fact_file = File.join("/etc/facts.d", fact)
-            extension = File.extname(fact)
+    def initialize(dir="/etc/facts.d", cache_file="/tmp/facts_cache.yml")
+        @dir = dir
+        @cache_file = cache_file
+        @cache = nil
+        @types = {".txt" => :txt, ".json" => :json, ".yaml" => :yaml}
+    end
 
-            case extension
-                when ".txt"
-                    File.readlines(fact_file).each do |line|
-                        if line =~ /^(.+)=(.+)$/
-                            var = $1; val = $2
+    def entries
+        Dir.entries(@dir).reject{|f| f =~ /^\.|\.ttl$/}.sort.map {|f| File.join(@dir, f) }
+    rescue
+        []
+    end
 
-                            Facter.add(var) do
-                                setcode { val }
-                            end
-                        end
-                    end
-                when ".json"
-                    require 'json'
+    def fact_type(file)
+        extension = File.extname(file)
 
-                    JSON.load(File.read(fact_file)).each_pair do |f, v|
-                        Facter.add(f) do
-                            setcode { v }
-                        end
-                    end
-                when ".yaml"
-                    require 'yaml'
+        type = @types[extension] || :unknown
 
-                    YAML.load_file(fact_file).each_pair do |f, v|
-                        Facter.add(f) do
-                            setcode { v }
-                        end
-                    end
-                else
-                    if File.executable?(fact_file)
-                        result = Facter::Util::Resolution.exec(fact_file)
+        type = :script if type == :unknown && File.executable?(file)
 
-                        result.split("\n").each do |line|
-                            if line =~ /^(.+)=(.+)$/
-                                var = $1; val = $2
+        return type
+    end
 
-                                Facter.add(var) do
-                                    setcode { val }
-                                end
-                            end
-                        end
-                    end
+    def txt_parser(file)
+        File.readlines(file).each do |line|
+            if line =~ /^(.+)=(.+)$/
+                var = $1; val = $2
+
+                Facter.add(var) do
+                    setcode { val }
+                end
             end
-        rescue Exception => e
-            puts("Failed to load fact #{fact_file}: #{e}")
+        end
+    rescue Exception => e
+        Facter.warn("Failed to handle #{file} as text facts: #{e.class}: #{e}")
+    end
+
+    def json_parser(file)
+        begin
+            require 'json'
+        rescue LoadError
+            require 'rubygems'
+            retry
+        end
+
+        JSON.load(File.read(file)).each_pair do |f, v|
+            Facter.add(f) do
+                setcode { v }
+            end
+        end
+    rescue Exception => e
+        Facter.warn("Failed to handle #{file} as json facts: #{e.class}: #{e}")
+    end
+
+    def yaml_parser(file)
+        require 'yaml'
+
+        YAML.load_file(file).each_pair do |f, v|
+            Facter.add(f) do
+                setcode { v }
+            end
+        end
+    rescue Exception => e
+        Facter.warn("Failed to handle #{file} as yaml facts: #{e.class}: #{e}")
+    end
+
+    def script_parser(file)
+        result = cache_lookup(file)
+        ttl = cache_time(file)
+
+        unless result
+            result = Facter::Util::Resolution.exec(file)
+
+            if ttl > 0
+                Facter.debug("Updating cache for #{file}")
+                cache_store(file, result)
+                cache_save!
+            end
+        else
+            Facter.debug("Using cached data for #{file}")
+        end
+
+        result.split("\n").each do |line|
+            if line =~ /^(.+)=(.+)$/
+                var = $1; val = $2
+
+                Facter.add(var) do
+                    setcode { val }
+                end
+            end
+        end
+    rescue Exception => e
+        Facter.warn("Failed to handle #{file} as script facts: #{e.class}: #{e}")
+        Facter.debug(e.backtrace.join("\n\t"))
+    end
+
+    def cache_save!
+        cache = load_cache
+        File.open(@cache_file, "w", 0600) {|f| f.write(YAML.dump(cache)) }
+    end
+
+    def cache_store(file, data)
+        load_cache
+
+        @cache[file] = {:data => data, :stored => Time.now.to_i}
+    end
+
+    def cache_lookup(file)
+        cache = load_cache
+
+        return nil if cache.empty?
+
+        ttl = cache_time(file)
+
+        if cache[file]
+            now = Time.now.to_i
+            if (now - cache[file][:stored]) <= ttl
+                return cache[file][:data]
+            else
+                return nil
+            end
+        else
+            return nil
         end
     end
-rescue Exception => e
-    Facter.debug("Failed to load facts from /etc/facts.d: #{e}")
+
+    def cache_time(file)
+        meta = file + ".ttl"
+
+        return File.read(meta).chomp.to_i
+    rescue
+        return 0
+    end
+
+    def load_cache
+        unless @cache
+            if File.exist?(@cache_file)
+                @cache = YAML.load_file(@cache_file)
+            else
+                @cache = {}
+            end
+        end
+
+        return @cache
+    rescue
+        @cache = {}
+        return @cache
+    end
+
+    def create
+        entries.each do |fact|
+            type = fact_type(fact)
+            parser = "#{type}_parser"
+
+            if respond_to?("#{type}_parser")
+                Facter.debug("Parsing #{fact} using #{parser}")
+
+                send(parser, fact)
+            end
+        end
+    end
 end
+
+Facter::Util::DotD.new.create

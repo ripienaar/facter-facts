@@ -51,3 +51,8 @@ echo "some_fact=some_value"
 echo "another_fact=some_value"
 </pre>
 
+In the case of executables we can build a mode 0600 cache in
+_/tmp/facts_cache.yml_, to allow the output from _foo.sh_ to be cached
+make a file called _foo.sh.ttl_ with just a number in seconds on the
+first line
+
