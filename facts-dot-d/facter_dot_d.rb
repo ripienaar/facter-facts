@@ -112,12 +112,14 @@ class Facter::Util::DotD
     def cache_save!
         cache = load_cache
         File.open(@cache_file, "w", 0600) {|f| f.write(YAML.dump(cache)) }
+    rescue
     end
 
     def cache_store(file, data)
         load_cache
 
         @cache[file] = {:data => data, :stored => Time.now.to_i}
+    rescue
     end
 
     def cache_lookup(file)
@@ -129,14 +131,15 @@ class Facter::Util::DotD
 
         if cache[file]
             now = Time.now.to_i
-            if (now - cache[file][:stored]) <= ttl
-                return cache[file][:data]
-            else
-                return nil
-            end
+
+            return cache[file][:data] if ttl == -1
+            return cache[file][:data] if (now - cache[file][:stored]) <= ttl
+            return nil
         else
             return nil
         end
+    rescue
+        return nil
     end
 
     def cache_time(file)
@@ -176,4 +179,4 @@ class Facter::Util::DotD
     end
 end
 
-Facter::Util::DotD.new.create
+Facter::Util::DotD.new("/home/rip/work/github/facter-facts/facts-dot-d/test").create
