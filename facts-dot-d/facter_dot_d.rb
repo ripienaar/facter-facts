@@ -51,11 +51,19 @@ class Facter::Util::DotD
     end
 
     def json_parser(file)
+        try_count = 0
+
         begin
+            try_count += 1
+
             require 'json'
         rescue LoadError
-            require 'rubygems'
-            retry
+            if try_count == 1
+                require 'rubygems'
+                retry
+            else
+                raise
+            end
         end
 
         JSON.load(File.read(file)).each_pair do |f, v|
