@@ -1,9 +1,6 @@
 # A base module for collecting Disk Drive-related
 # information from all kinds of platforms.
 module Facter::Util::DiskDrives
-    # All the types of drives we know about
-    drivetypes = ["xvd", "ide", "scsi"]
-
     # platforms we work on
     def self.supported_platforms
         [:linux]
@@ -12,7 +9,7 @@ module Facter::Util::DiskDrives
     def self.drives
         @drivedata = Hash.new
 
-        drivetypes.each do |t|
+        ["xvd", "ide", "scsi"].each do |t|
             send("get_#{t}_data")
         end
 
