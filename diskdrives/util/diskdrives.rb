@@ -2,7 +2,7 @@
 # information from all kinds of platforms.
 module Facter::Util::DiskDrives
     # All the types of drives we know about
-    DRIVETYPES = ["xvd", "ide", "scsi"]
+    drivetypes = ["xvd", "ide", "scsi"]
 
     # platforms we work on
     def self.supported_platforms
@@ -12,7 +12,7 @@ module Facter::Util::DiskDrives
     def self.drives
         @drivedata = Hash.new
 
-        DRIVETYPES.each do |t|
+        drivetypes.each do |t|
             send("get_#{t}_data")
         end
 
@@ -104,34 +104,34 @@ then
   Facter.add(:diskdrives) do
     confine :kernel => Facter::Util::DiskDrives.supported_platforms
     setcode do
-      drives.collect do |drive, data|  
+      drives.collect do |drive, data|
         drive
       end.sort.join(",")
     end
   end
-  
-  diskdrives_smart = drives.collect do |drive, data|  
+
+  diskdrives_smart = drives.collect do |drive, data|
     drive if data[:smart] == 'yes'
   end.compact!.sort.join(",")
-  
+
   Facter.add(:diskdrives_smart) do
     confine :kernel => Facter::Util::DiskDrives.supported_platforms
     setcode do
       diskdrives_smart
     end
   end
-  
-  diskdrives_smartattr = drives.collect do |drive, data|  
+
+  diskdrives_smartattr = drives.collect do |drive, data|
     drive if data[:smartattr] == 'yes'
   end.compact!.sort.join(",")
-  
+
   Facter.add(:diskdrives_smartattr) do
     confine :kernel => Facter::Util::DiskDrives.supported_platforms
     setcode do
-      diskdrives_smartattr 
+      diskdrives_smartattr
     end
   end
-  
+
   drives.each do |drive, data|
     data.each do |key, val|
       Facter.add("disk#{key}_#{drive}") do
