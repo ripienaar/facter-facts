@@ -187,4 +187,4 @@ class Facter::Util::DotD
     end
 end
 
-Facter::Util::DotD.new("/home/rip/work/github/facter-facts/facts-dot-d/test").create
+Facter::Util::DotD.new("/etc/facts.d").create
