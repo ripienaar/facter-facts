@@ -107,26 +107,29 @@ then
     end
   end
 
-  diskdrives_smart = drives.collect do |drive, data|
-    drive if data[:smart] == 'yes'
-  end.compact!.sort.join(",")
+  begin
+      diskdrives_smart = drives.collect do |drive, data|
+        drive if data[:smart] == 'yes'
+      end.compact!.sort.join(",")
 
-  Facter.add(:diskdrives_smart) do
-    confine :kernel => Facter::Util::DiskDrives.supported_platforms
-    setcode do
-      diskdrives_smart
-    end
-  end
+      Facter.add(:diskdrives_smart) do
+        confine :kernel => Facter::Util::DiskDrives.supported_platforms
+        setcode do
+          diskdrives_smart
+        end
+      end
 
-  diskdrives_smartattr = drives.collect do |drive, data|
-    drive if data[:smartattr] == 'yes'
-  end.compact!.sort.join(",")
+      diskdrives_smartattr = drives.collect do |drive, data|
+        drive if data[:smartattr] == 'yes'
+      end.compact!.sort.join(",")
 
-  Facter.add(:diskdrives_smartattr) do
-    confine :kernel => Facter::Util::DiskDrives.supported_platforms
-    setcode do
-      diskdrives_smartattr
-    end
+      Facter.add(:diskdrives_smartattr) do
+        confine :kernel => Facter::Util::DiskDrives.supported_platforms
+        setcode do
+          diskdrives_smartattr
+        end
+      end
+  rescue
   end
 
   drives.each do |drive, data|
