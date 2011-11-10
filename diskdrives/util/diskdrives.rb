@@ -9,7 +9,7 @@ module Facter::Util::DiskDrives
     def self.drives
         @drivedata = Hash.new
 
-        ["xvd", "ide", "scsi"].each do |t|
+        ["xvd", "ide", "scsi", "cciss"].each do |t|
             send("get_#{t}_data")
         end
 
@@ -77,6 +77,23 @@ module Facter::Util::DiskDrives
                 else
                     @drivedata[d][:smartattr] = "no"
                 end
+            end if File.exists?("/sys/block")
+        else
+            raise ArgumentError, "Not supported on kernel %s" %  Facter.value(:kernel)
+        end
+    end
+
+    def self.get_cciss_data
+        case Facter.value(:kernel)
+        when 'Linux'
+            Dir.open("/sys/block").entries.grep(/^cciss/).each do |d|
+                @drivedata[d] = {}
+
+                @drivedata[d][:type] = "cciss"
+                @drivedata[d][:model] = "HP RAID"
+                @drivedata[d][:size] = get_file_contents("/sys/block/#{d}/size", 0) if File.exists?("/sys/block")
+                @drivedata[d][:smart] =  "no"
+                @drivedata[d][:smartattr] =  "no"
             end if File.exists?("/sys/block")
         else
             raise ArgumentError, "Not supported on kernel %s" %  Facter.value(:kernel)
