@@ -90,7 +90,7 @@ module Facter::Util::DiskDrives
                 @drivedata[d] = {}
 
                 @drivedata[d][:type] = "cciss"
-                @drivedata[d][:model] = "HP RAID"
+                @drivedata[d][:model] = "HP Logical Disk"
                 @drivedata[d][:size] = get_file_contents("/sys/block/#{d}/size", 0) if File.exists?("/sys/block")
                 @drivedata[d][:smart] =  "no"
                 @drivedata[d][:smartattr] =  "no"
