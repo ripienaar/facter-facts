@@ -92,7 +92,7 @@ class Facter::Util::DotD
         ttl = cache_time(file)
 
         unless result
-            result = Facter::Util::Resolution.exec(file)
+            result = Facter::Util::Resolution.exec("sh #{file}")
 
             if ttl > 0
                 Facter.debug("Updating cache for #{file}")
